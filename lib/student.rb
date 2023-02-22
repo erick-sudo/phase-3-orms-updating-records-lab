@@ -6,7 +6,7 @@ class Student
   # with DB[:conn]
   attr_accessor :name, :grade, :id
 
-  def initialize(name, grade, id: nil)
+  def initialize(name, grade, id = nil)
     @name = name
     @grade = grade
     @id = id
@@ -33,13 +33,17 @@ class Student
   end
 
   def save
-    sql = <<-SQL
-      INSERT INTO students (name, grade)
-      VALUES (?, ?)
-    SQL
+    if(self.id != nil)
+      self.update
+    else
+      sql = <<-SQL
+        INSERT INTO students (name, grade)
+        VALUES (?, ?)
+      SQL
 
-    DB[:conn].execute(sql, self.name, self.grade)
-    self.id = DB[:conn].last_insert_row_id()
+      DB[:conn].execute(sql, self.name, self.grade)
+      self.id = DB[:conn].last_insert_row_id()
+    end
   end
 
   def self.create(name, grade)
@@ -48,7 +52,7 @@ class Student
   end
 
   def self.new_from_db(row)
-    Student.new(row[0], row[1], row[2])
+    Student.new(row[1], row[2], row[0])
   end
 
   def self.find_by_name(name)
